@@ -105,3 +105,4 @@ class CapstoneStack(Stack):
         CfnOutput(self, "SiteUrl", value="https://" + distribution.domain_name)
         CfnOutput(self, "SiteBucketName", value=site_bucket.bucket_name)
         CfnOutput(self, "DistributionId", value=distribution.distribution_id)
+        
