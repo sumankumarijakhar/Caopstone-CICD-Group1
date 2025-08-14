@@ -1,16 +1,13 @@
 name: Deploy
-
 on:
   push:
     branches: [ "main" ]
 
-permissions:
-  id-token: write
-  contents: read
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      AWS_DEFAULT_REGION: us-east-1
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -18,14 +15,17 @@ jobs:
           node-version: '20'
       - run: npm ci
       - run: npm run build
-      - name: Configure AWS credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: us-east-1
-      - name: CDK Bootstrap (safe to run multiple times)
-        run: npx cdk bootstrap aws://$AWS_ACCOUNT_ID/us-east-1
-        env:
-          AWS_ACCOUNT_ID: ${{ env.AWS_ACCOUNT_ID }}
+      - name: Configure AWS creds (sandbox keys)
+        run: |
+          echo "Configuring env creds"
+          echo "::add-mask::${{ secrets.AWS_ACCESS_KEY_ID }}"
+          echo "::add-mask::${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+          echo "::add-mask::${{ secrets.AWS_SESSION_TOKEN }}"
+          export AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}"
+          export AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+          export AWS_SESSION_TOKEN="${{ secrets.AWS_SESSION_TOKEN }}"
+          aws sts get-caller-identity
+      - name: CDK Bootstrap (idempotent)
+        run: npx cdk bootstrap
       - name: Deploy
         run: npm run deploy
