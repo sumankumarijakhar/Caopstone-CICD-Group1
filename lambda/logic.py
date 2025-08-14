@@ -1,5 +1,4 @@
 """Pure helpers for routing, parsing and validation."""
-from __future__ import annotations
 from typing import Tuple, Optional, Dict, Any
 
 def route(path: str, method: str) -> str:
