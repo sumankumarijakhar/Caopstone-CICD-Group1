@@ -5,8 +5,6 @@ import os
 import boto3
 from typing import Any, Dict
 
-from logic import route, parse_body, validate_item  # used locally; inlined at deploy
-
 _ddb = boto3.resource("dynamodb")
 _table = _ddb.Table(os.environ["TABLE_NAME"])
 
