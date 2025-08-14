@@ -11,3 +11,9 @@ button{ cursor:pointer; }
 input{ margin-right:8px; }
 pre{ background:#0f172a; padding:12px; border-radius:10px; overflow:auto; }
 form{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+table.grid { width:100%; border-collapse: collapse; }
+table.grid th, table.grid td { padding:10px; border-bottom:1px solid #223; text-align:left; }
+table.grid input.title-input { width:100%; }
+.badge { background:#1e293b; color:#9cb0d3; padding:4px 8px; border-radius:999px; font-size:12px; }
+.actions button { margin-right:6px; }
+
