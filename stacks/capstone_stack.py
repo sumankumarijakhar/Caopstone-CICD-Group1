@@ -53,7 +53,7 @@ class CapstoneStack(Stack):
 
         fn = lambda_.Function(
             self, "ApiFunction",
-            runtime=lambda_.Runtime.PYTHON_3_12,
+            runtime=lambda_.Runtime.PYTHON_3_11,
             handler="index.handler",
             timeout=Duration.seconds(10),
             memory_size=256,
