@@ -10,7 +10,8 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "moduleResolution": "node",
-    "types": ["node", "aws-lambda"]
+    "types": ["node", "aws-lambda", "jest"]
   },
-  "include": ["bin", "lib", "backend"]
+  "include": ["bin/**/*.ts", "lib/**/*.ts", "backend/**/*.ts"],
+  "exclude": ["node_modules", "cdk.out"]
 }
