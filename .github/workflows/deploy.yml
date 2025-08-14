@@ -20,7 +20,6 @@ jobs:
       - run: npm install
       - run: npm run build
 
-      # Use sandbox credentials from GitHub Secrets (no OIDC/role needed)
       - name: Configure AWS credentials (sandbox)
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -29,9 +28,24 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # Safe to run repeatedly; bootstraps the CDK environment if not present
-      - name: CDK Bootstrap
-        run: npx cdk bootstrap
+      # NOTE: No CDK bootstrap anymore
 
-      - name: Deploy
+      - name: Deploy CDK Stack
         run: npm run deploy
+
+      - name: Read stack outputs
+        id: outs
+        run: |
+          BUCKET=$(aws cloudformation describe-stacks --stack-name CapstoneStack \
+            --query "Stacks[0].Outputs[?OutputKey=='SiteBucketName'].OutputValue" --output text)
+          DIST=$(aws cloudformation describe-stacks --stack-name CapstoneStack \
+            --query "Stacks[0].Outputs[?OutputKey=='DistributionId'].OutputValue" --output text)
+          echo "BUCKET=$BUCKET" >> $GITHUB_ENV
+          echo "DIST=$DIST" >> $GITHUB_ENV
+          echo "Bucket=$BUCKET, Dist=$DIST"
+
+      - name: Upload frontend to S3
+        run: aws s3 sync frontend/ s3://$BUCKET --delete
+
+      - name: Invalidate CloudFront
+        run: aws cloudfront create-invalidation --distribution-id $DIST --paths "/*"
