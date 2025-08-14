@@ -8,7 +8,9 @@
     "outDir": "cdk.out",
     "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "types": ["node", "aws-lambda"]
   },
   "include": ["bin", "lib", "backend"]
 }
