@@ -8,6 +8,7 @@ from aws_cdk import (
     aws_dynamodb as dynamodb,
     aws_lambda as lambda_,
     aws_cloudwatch as cloudwatch,
+    aws_iam as iam,
 )
 
 class CapstoneStack(Stack):
@@ -45,6 +46,7 @@ class CapstoneStack(Stack):
             memory_size=256,
             environment={"TABLE_NAME": table.table_name},
             code=lambda_.Code.from_inline(inline_code),
+            role=exec_role,  # <-- use your existing role
         )
         table.grant_read_write_data(fn)
 
