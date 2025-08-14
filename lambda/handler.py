@@ -4,6 +4,13 @@ import os
 import boto3
 from typing import Any, Dict
 
+# NOTE: do NOT import from logic at runtime; we inline it during deploy.
+# from logic import route, parse_body, validate_item
+
+# --- inlined helpers start (CDK concatenates logic.py above this file) ---
+
+# --- inlined helpers end ---
+
 _ddb = boto3.resource("dynamodb")
 _table = _ddb.Table(os.environ["TABLE_NAME"])
 
@@ -27,7 +34,8 @@ def handler(event: Dict[str, Any], _context: Any) -> Dict[str, Any]:
         or "GET"
     )
 
-    r = route(path, method)
+    # route/parse_body/validate_item are provided by the inlined logic.py
+    r = route(path, method)  # type: ignore[name-defined]
 
     if r == "HEALTH":
         return _response(200, {"ok": True})
@@ -37,8 +45,8 @@ def handler(event: Dict[str, Any], _context: Any) -> Dict[str, Any]:
         return _response(200, {"items": data.get("Items", [])})
 
     if r == "CREATE":
-        body = parse_body(event.get("body"))
-        ok, msg = validate_item(body)
+        body = parse_body(event.get("body"))  # type: ignore[name-defined]
+        ok, msg = validate_item(body)         # type: ignore[name-defined]
         if not ok:
             return _response(400, {"error": msg})
         _table.put_item(Item=body)
