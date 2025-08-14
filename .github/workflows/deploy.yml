@@ -1,4 +1,4 @@
-name: Deploy
+name: Deploy (Python)
 
 on:
   push:
@@ -12,13 +12,11 @@ jobs:
       AWS_REGION: ${{ secrets.AWS_REGION || 'us-east-1' }}
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-python@v5
         with:
-          node-version: '20'
-
-      - run: npm install
-      - run: npm run build
+          python-version: '3.12'
+      - name: Install deps
+        run: pip install -r requirements.txt
 
       - name: Configure AWS credentials (sandbox)
         uses: aws-actions/configure-aws-credentials@v4
@@ -28,23 +26,22 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # NOTE: No CDK bootstrap anymore
+      - name: Deploy stack
+        run: cdk deploy --require-approval never
 
-      - name: Deploy CDK Stack
-        run: npm run deploy
-
-      - name: Read stack outputs
+      - name: Read outputs
         id: outs
         run: |
-          BUCKET=$(aws cloudformation describe-stacks --stack-name CapstoneStack \
-            --query "Stacks[0].Outputs[?OutputKey=='SiteBucketName'].OutputValue" --output text)
-          DIST=$(aws cloudformation describe-stacks --stack-name CapstoneStack \
-            --query "Stacks[0].Outputs[?OutputKey=='DistributionId'].OutputValue" --output text)
+          SITE=$(aws cloudformation describe-stacks --stack-name CapstoneStack --query "Stacks[0].Outputs[?OutputKey=='SiteUrl'].OutputValue" --output text)
+          BUCKET=$(aws cloudformation describe-stacks --stack-name CapstoneStack --query "Stacks[0].Outputs[?OutputKey=='SiteBucketName'].OutputValue" --output text)
+          DIST=$(aws cloudformation describe-stacks --stack-name CapstoneStack --query "Stacks[0].Outputs[?OutputKey=='DistributionId'].OutputValue" --output text)
+          echo "SITE=$SITE" >> $GITHUB_ENV
           echo "BUCKET=$BUCKET" >> $GITHUB_ENV
           echo "DIST=$DIST" >> $GITHUB_ENV
+          echo "Site=$SITE"
           echo "Bucket=$BUCKET, Dist=$DIST"
 
-      - name: Upload frontend to S3
+      - name: Upload frontend
         run: aws s3 sync frontend/ s3://$BUCKET --delete
 
       - name: Invalidate CloudFront

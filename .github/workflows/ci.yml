@@ -1,23 +1,21 @@
-name: CI
+name: CI (Python)
 
 on:
   pull_request:
   push:
-    branches-ignore:
-      - main
+    branches-ignore: [ "main" ]
 
 jobs:
   ci:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-python@v5
         with:
-          node-version: '20'
-      - run: npm install
-      - run: npm run build
-      - run: npm test
+          python-version: '3.12'
+      - name: Install deps
+        run: pip install -r requirements.txt
+      - name: Tests + coverage
+        run: pytest --maxfail=1 --disable-warnings -q --cov=lambda --cov-report=term-missing
       - name: CDK synth
-        run: npm run synth
+        run: cdk synth

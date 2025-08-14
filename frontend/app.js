@@ -1,7 +1,7 @@
 async function getJSON(url, options = {}) {
   const res = await fetch(url, options);
-  const text = await res.text();
-  try { return JSON.parse(text); } catch { return { raw: text }; }
+  const txt = await res.text();
+  try { return JSON.parse(txt); } catch { return { raw: txt }; }
 }
 
 document.getElementById('btnHealth').addEventListener('click', async () => {
