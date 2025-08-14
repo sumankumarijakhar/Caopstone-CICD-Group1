@@ -1,0 +1,39 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Role for GitHub Actions OIDC to deploy CDK (Capstone Project)
+
+Parameters:
+  GitHubOrg:
+    Type: String
+    Description: GitHub organization or user (e.g., your-username)
+  GitHubRepo:
+    Type: String
+    Description: Repository name (e.g., capstone-ci-cd-group1)
+  Branch:
+    Type: String
+    Default: main
+    Description: Branch allowed to assume the role
+
+Resources:
+  GitHubOIDCRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: Capstone-GitHub-Actions-DeployRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: arn:aws:iam::${AWS::AccountId}:oidc-provider/token.actions.githubusercontent.com
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+              StringLike:
+                token.actions.githubusercontent.com:sub: repo:${GitHubOrg}/${GitHubRepo}:ref:refs/heads/${Branch}
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+
+Outputs:
+  DeployRoleArn:
+    Value: !GetAtt GitHubOIDCRole.Arn
+    Description: ARN of the role to put in GitHub variable AWS_DEPLOY_ROLE_ARN

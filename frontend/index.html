@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Capstone App</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Capstone App (Group 1)</h1>
+      <p class="muted">Frontend via CloudFront → API via /api/* → Lambda → DynamoDB</p>
+
+      <section class="card">
+        <h2>Health</h2>
+        <button id="btnHealth">Check</button>
+        <pre id="healthOut"></pre>
+      </section>
+
+      <section class="card">
+        <h2>Items</h2>
+        <form id="itemForm">
+          <input id="itemId" placeholder="id (e.g., 123)" required />
+          <input id="itemTitle" placeholder="title (e.g., Buy milk)" required />
+          <button type="submit">Add</button>
+        </form>
+        <button id="btnRefresh">Refresh</button>
+        <pre id="itemsOut"></pre>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
