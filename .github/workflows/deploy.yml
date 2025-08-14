@@ -35,7 +35,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Deploy stack
-        run: cdk deploy --require-approval never -c lambdaExecRoleArn=${{ vars.LAMBDA_EXEC_ROLE_ARN }}
+        run: cdk deploy --require-approval never -c lambdaExecRoleArn=arn:aws:iam::795096296861:role/lambda-run-role
 
       - name: Read outputs
         id: outs
