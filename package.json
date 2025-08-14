@@ -9,8 +9,6 @@
     "test": "jest --coverage"
   },
   "devDependencies": {
-    "@aws-cdk/aws-apigatewayv2-alpha": "^2.146.0-alpha.0",
-    "@aws-cdk/aws-apigatewayv2-integrations-alpha": "^2.146.0-alpha.0",
     "aws-cdk": "^2.146.0",
     "aws-cdk-lib": "^2.146.0",
     "constructs": "^10.3.0",
@@ -23,8 +21,6 @@
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.632.0",
-    "@aws-sdk/lib-dynamodb": "^3.632.0",
-    "aws-cdk-lib": "^2.146.0",
-    "constructs": "^10.3.0"
+    "@aws-sdk/lib-dynamodb": "^3.632.0"
   }
 }
