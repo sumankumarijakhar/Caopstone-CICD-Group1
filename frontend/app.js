@@ -31,7 +31,7 @@ async function refresh() {
     <tr>
       <td>${it.id}</td>
       <td>
-        <input class="title-input" data-id="${it.id}" value="${it.title?.replace(/"/g,'&quot;') || ''}">
+        <input class="title-input" data-id="${it.id}" value="${(it.title ?? '').replace(/"/g,'&quot;')}">
       </td>
       <td class="actions">
         <button class="save" data-id="${it.id}">Save</button>

@@ -14,35 +14,37 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install Python deps
-        run: pip install -r requirements.txt
+        with: { python-version: '3.12' }
 
-      # NEW: Install CDK CLI
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - name: Install AWS CDK CLI
-        run: npm install -g aws-cdk@2 && cdk --version
+      - name: Install CDK & deps
+        run: |
+          pip install -r requirements.txt || true
+          pip install aws-cdk-lib constructs boto3
+          npm i -g aws-cdk
 
       - name: Configure AWS credentials (sandbox)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-session-token:     ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region:            ${{ env.AWS_REGION }}
+
+      - name: CDK Bootstrap (idempotent)
+        run: cdk bootstrap -c lambdaExecRoleArn=${{ secrets.LAMBDA_EXEC_ROLE_ARN }}
 
       - name: Deploy stack
-        run: cdk deploy --require-approval never -c lambdaExecRoleArn=arn:aws:iam::795096296861:role/lambda-run-role
+        run: cdk deploy --require-approval never -c lambdaExecRoleArn=${{ secrets.LAMBDA_EXEC_ROLE_ARN }}
 
-      - name: Read outputs
+      - name: Capture outputs
         id: outs
         run: |
-          SITE=$(aws cloudformation describe-stacks --stack-name CapstoneStack --query "Stacks[0].Outputs[?OutputKey=='SiteUrl'].OutputValue" --output text)
-          BUCKET=$(aws cloudformation describe-stacks --stack-name CapstoneStack --query "Stacks[0].Outputs[?OutputKey=='SiteBucketName'].OutputValue" --output text)
-          DIST=$(aws cloudformation describe-stacks --stack-name CapstoneStack --query "Stacks[0].Outputs[?OutputKey=='DistributionId'].OutputValue" --output text)
+          SITE=$(aws cloudformation describe-stacks --stack-name CapstoneStack \
+            --query "Stacks[0].Outputs[?OutputKey=='SiteUrl'].OutputValue" --output text)
+          BUCKET=$(aws cloudformation describe-stacks --stack-name CapstoneStack \
+            --query "Stacks[0].Outputs[?OutputKey=='SiteBucketName'].OutputValue" --output text)
+          DIST=$(aws cloudformation describe-stacks --stack-name CapstoneStack \
+            --query "Stacks[0].Outputs[?OutputKey=='DistributionId'].OutputValue" --output text)
           echo "SITE=$SITE" >> $GITHUB_ENV
           echo "BUCKET=$BUCKET" >> $GITHUB_ENV
           echo "DIST=$DIST" >> $GITHUB_ENV
