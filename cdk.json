@@ -1,6 +1,6 @@
 {
   "app": "python app.py",
   "context": {
-    "lambdaExecRoleArn": "arn:aws:iam::<ACCOUNT_ID>:role/lambda-run-role"
+    "lambdaExecRoleArn": "arn:aws:iam::795096296861:role/lambda-run-role"
   }
 }

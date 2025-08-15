@@ -31,10 +31,10 @@ jobs:
           aws-region:            ${{ env.AWS_REGION }}
 
       - name: CDK Bootstrap (idempotent)
-        run: cdk bootstrap -c lambdaExecRoleArn=${{ secrets.LAMBDA_EXEC_ROLE_ARN }}
+        run: cdk bootstrap
 
       - name: Deploy stack
-        run: cdk deploy --require-approval never -c lambdaExecRoleArn=${{ secrets.LAMBDA_EXEC_ROLE_ARN }}
+        run: cdk deploy --require-approval never
 
       - name: Capture outputs
         id: outs
