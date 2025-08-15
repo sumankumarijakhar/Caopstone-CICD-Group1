@@ -30,6 +30,7 @@ def _load_items() -> List[Dict[str, Any]]:
     except s3.exceptions.NoSuchKey:
         return []
     except Exception:
+        # keep resilient for demo
         return []
 
 def _save_items(items: List[Dict[str, Any]]) -> None:
@@ -41,6 +42,7 @@ def _save_items(items: List[Dict[str, Any]]) -> None:
     )
 
 def _emit_metric(op: str, ok: bool, start_ts: float) -> None:
+    # CloudWatch Embedded Metric Format
     duration_ms = int((time.time() - start_ts) * 1000)
     print(json.dumps({
         "_aws": {
@@ -54,7 +56,10 @@ def _emit_metric(op: str, ok: bool, start_ts: float) -> None:
                 ],
             }],
         },
-        "Operation": op, "Requests": 1, "Errors": 0 if ok else 1, "LatencyMs": duration_ms,
+        "Operation": op,
+        "Requests": 1,
+        "Errors": 0 if ok else 1,
+        "LatencyMs": duration_ms,
     }))
 
 def _id_from_path(path: str) -> Optional[str]:
@@ -62,6 +67,7 @@ def _id_from_path(path: str) -> Optional[str]:
     return parts[-1] if len(parts) >= 3 and parts[-2] == "items" else None
 
 def _get_path_method_body(event: Dict[str, Any]) -> tuple[str, str, Optional[str]]:
+    # Works for Function URL via CloudFront
     path = event.get("path") or event.get("rawPath") \
         or event.get("requestContext", {}).get("http", {}).get("path") or ""
     method = event.get("httpMethod") \
@@ -100,14 +106,15 @@ def handler(event: Dict[str, Any], _context: Any) -> Dict[str, Any]:
             body = parse_body(raw_body)  # type: ignore[name-defined]
             ok, msg = validate_item(body)  # type: ignore[name-defined]
             if not ok:
-                _emit_metric(op, False, start);  return _response(400, {"error": msg})
-
+                _emit_metric(op, False, start)
+                return _response(400, {"error": msg})
             items = _load_items()
-            if any(str(it.get("id")) == str(body["id"]) for it in items):
-                _emit_metric(op, False, start);  return _response(409, {"error": "id already exists"})
-
+            if any(it.get("id") == body["id"] for it in items):
+                _emit_metric(op, False, start)
+                return _response(409, {"error": "id already exists"})
             body["createdAt"] = body.get("createdAt") or time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-            items.append(body);  _save_items(items)
+            items.append(body)
+            _save_items(items)
             _emit_metric(op, True, start)
             return _response(201, {"saved": True, "item": body})
 
@@ -116,23 +123,29 @@ def handler(event: Dict[str, Any], _context: Any) -> Dict[str, Any]:
             items = _load_items()
             idx = next((i for i, it in enumerate(items) if str(it.get("id")) == str(item_id)), -1)
             if idx < 0:
-                _emit_metric(op, False, start);  return _response(404, {"error": "not found"})
+                _emit_metric(op, False, start)
+                return _response(404, {"error": "not found"})
 
             if r == "GET_ONE":
-                _emit_metric(op, True, start);  return _response(200, items[idx])
+                _emit_metric(op, True, start)
+                return _response(200, items[idx])
 
             if r == "UPDATE":
                 body = parse_body(raw_body)  # type: ignore[name-defined]
                 title = (body.get("title") or "").strip()
                 if not title:
-                    _emit_metric(op, False, start);  return _response(400, {"error": "title required"})
+                    _emit_metric(op, False, start)
+                    return _response(400, {"error": "title required"})
                 items[idx]["title"] = title
                 items[idx]["updatedAt"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-                _save_items(items);  _emit_metric(op, True, start)
+                _save_items(items)
+                _emit_metric(op, True, start)
                 return _response(200, {"updated": True, "item": items[idx]})
 
             if r == "DELETE":
-                removed = items.pop(idx);  _save_items(items);  _emit_metric(op, True, start)
+                removed = items.pop(idx)
+                _save_items(items)
+                _emit_metric(op, True, start)
                 return _response(200, {"deleted": True, "id": removed.get("id")})
 
         _emit_metric(op, False, start)

@@ -2,7 +2,7 @@
 from typing import Tuple, Optional, Dict, Any
 
 def _is_item_detail(path: str) -> Optional[str]:
-    # match /api/items/<id>
+    # /api/items/<id>
     if not path:
         return None
     parts = path.rstrip("/").split("/")
@@ -49,11 +49,6 @@ def parse_body(raw: Optional[str]) -> Dict[str, Any]:
 def validate_item(item: Dict[str, Any]) -> Tuple[bool, Optional[str]]:
     if not isinstance(item, dict):
         return False, "Invalid JSON"
-    # helpful coercion (ids typed as numbers)
-    if "id" in item:
-        item["id"] = str(item["id"]).strip()
-    if "title" in item:
-        item["title"] = str(item["title"]).strip()
     if not item.get("id") or not item.get("title"):
         return False, "id and title required"
     return True, None

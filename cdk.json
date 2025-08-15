@@ -1,6 +1,1 @@
-{
-  "app": "python app.py",
-  "context": {
-    "lambdaExecRoleArn": "arn:aws:iam::795096296861:role/lambda-run-role"
-  }
-}
+{"app": "python3 app.py"}
